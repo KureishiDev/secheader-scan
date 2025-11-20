@@ -9,10 +9,7 @@ CORS(app)
 @app.after_request
 def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    
-    # LINHA CORRIGIDA: Uso de aspas triplas (triplos apóstrofos) para evitar erro de sintaxe
     response.headers['Content-Security-Policy'] = """default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net data:;"""
-    
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
@@ -53,7 +50,8 @@ def scan_url():
         return jsonify({"success": False, "message": "Formato de URL inválido."}), 400
 
     try:
-        headers_fake = {'User-Agent': 'Mozilla/5.0 (SecHeaderScan/1.0)'}
+        # User-Agent corrigido para se parecer com o Chrome
+        headers_fake = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'}
         
         response = requests.get(target_url, headers=headers_fake, timeout=5)
         site_headers = response.headers
