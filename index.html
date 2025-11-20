@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecHeader // Cyber Scanner</title>
-    
+    <title>WebSec // Security Auditor</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="/logoi.png">
 </head>
@@ -13,12 +12,12 @@
     <div class="container">
         <header>
             <h1>
-                <img src="logo.png" alt="Logo SecHeader" class="logo-img">
+                <img src="logo.png" alt="Logo WebSec" class="logo-img">
                 <div>
-                SecHeader <span class="neon-text">Scan</span>
+                    WebSec <span class="neon-text">Auditor</span>
                 </div>
             </h1>
-            <p class="subtitle">ANÁLISE DE SEGURANÇA DE CABEÇALHOS HTTP</p>
+            <p class="subtitle">HEADERS • SSL/TLS • DNS • WHOIS • OSINT • SRI</p>
         </header>
 
         <div class="search-card">
@@ -28,35 +27,44 @@
             </form>
 
             <div id="loadingArea" class="hidden">
-                <p class="loader-text">ESTABELECENDO CONEXÃO SEGURA...</p>
+                <p class="loader-text">EXECUTANDO DEEP SCAN & INTELLIGENCE GATHERING...</p>
                 <div class="cyber-loader"></div>
             </div>
         </div>
 
         <div id="resultsArea" class="hidden">
+            
             <div class="results-container">
-                
                 <div class="card score-card">
                     <div class="grade-circle" id="scoreCircle">?</div>
                     <span class="url-target" id="displayUrl">---</span>
                     <p id="scoreText" style="font-weight: bold; letter-spacing: 1px;">---</p>
+                    <button id="downloadBtn" style="margin-top: 15px; font-size: 0.8rem; padding: 8px 15px;">⬇️ Baixar JSON</button>
                 </div>
 
                 <div class="card headers-list">
-                    <h3 class="report-title">RELATÓRIO TÉCNICO</h3>
+                    <h3 class="report-title">RELATÓRIO DE HEADERS</h3>
                     <div id="headersContainer"></div>
                 </div>
             </div>
+            
+            <div id="sslContainer" style="margin-top: 20px;"></div>
+            <div id="whoisContainer"></div> <div id="dnsContainer"></div>
+            <div id="techContainer"></div>
+            <div id="sriContainer"></div> <div id="cookieContainer"></div>
+            <div id="apiContainer"></div>
+            <div id="fullReportContainer"></div>
+
         </div>
 
- </div> <footer>
+    </div>
+
+    <footer>
         <div class="footer-content">
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
                 <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
             </a>
-            
             <span class="separator">//</span>
-            
             <p>
                 Projeto desenvolvido por 
                 <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">
@@ -68,6 +76,4 @@
     
     <script src="script.js"></script>
 </body>
-
 </html>
-
