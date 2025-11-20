@@ -53,14 +53,26 @@ def scan_url():
         # User-Agent corrigido para se parecer com o Chrome
         headers_fake = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'}
         
+        # --- DEBUG LOGGING ---
+        print(f"DEBUG: Tentando escanear: {target_url}")
+        print(f"DEBUG: Usando User-Agent: {headers_fake.get('User-Agent')}")
+        # ---------------------
+
         response = requests.get(target_url, headers=headers_fake, timeout=5)
         site_headers = response.headers
+        
+        # --- DEBUG LOGGING ---
+        print(f"DEBUG: Status final da requisição: {response.status_code}")
+        print(f"DEBUG: Headers FINAIS Recebidos: {dict(site_headers)}")
+        # ---------------------
         
         results = []
         score = 0
         total_checks = len(SECURITY_HEADERS)
 
         for header, description in SECURITY_HEADERS.items():
+            value = site_headers.get(header)
+            
             match = False
             for h in site_headers:
                 if h.lower() == header.lower():
@@ -75,7 +87,8 @@ def scan_url():
             results.append({
                 "name": header,
                 "status": status,
-                "desc": description
+                "desc": description,
+                "value": value if value else "N/A"
             })
 
         percentage = (score / total_checks) * 100
