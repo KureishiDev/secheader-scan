@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         headersContainer.innerHTML = ''; 
 
         try {
-            const response = await fetch('https://secheader-vinicius.onrender.com/api/scan', { 
+            // CORREÇÃO: Usando caminho relativo '/api/scan' em vez de http://127.0.0.1:5000
+            const response = await fetch('/api/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url })
@@ -61,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
             loadingArea.classList.add('hidden');
             submitBtn.disabled = false;
-            alert('ERRO CRÍTICO: Servidor offline ou inacessível.');
+            // Se cair no catch, o problema é grave (rede, servidor Flask está offline)
+            alert('ERRO CRÍTICO: Falha na comunicação com o servidor. Tente novamente mais tarde.');
         }
     });
 
