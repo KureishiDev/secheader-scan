@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback // WebSec Auditor</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="/shield.ico">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">WebSec<span style="color:var(--neon-green);">//</span>Auditor</a>
+            <div class="nav-links">
+                <a href="/">Scanner</a>
+                <a href="/about">Sobre Mim</a>
+                <a href="/feedback" class="active">Feedback</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="search-card">
+            <h2 style="color: var(--neon-green); margin-bottom: 20px; text-align: center;">ENVIAR FEEDBACK</h2>
+            <p class="subtitle" style="text-align: center; margin-bottom: 30px;">Encontrou um bug ou tem uma sugestão? Fale comigo.</p>
+            
+            <form action="https://formspree.io/f/mdkbylbr" method="POST">
+                
+                <div class="form-group">
+                    <input type="text" name="name" placeholder="SEU NOME" required style="width: 100%;">
+                </div>
+
+                <div class="form-group">
+                    <input type="email" name="email" placeholder="SEU E-MAIL" required style="width: 100%;">
+                </div>
+
+                <div class="form-group">
+                    <textarea name="message" placeholder="SUA MENSAGEM..." required></textarea>
+                </div>
+
+                <button type="submit" style="width: 100%;">ENVIAR MENSAGEM</button>
+            </form>
+        </div>
+    </div>
+    
+  <footer>
+    <div class="footer-content">
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
+            <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
+        </a>
+        
+        <span class="separator">//</span>
+        
+        <p>
+            Projeto desenvolvido por 
+            <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">
+                Vinicius Wandembruck
+            </a>&trade;
+            
+            <span class="separator-inline"> // </span>
+            
+            <a href="https://utfpr.curitiba.br/vespas/" target="_blank" title="VESPAS - UTFPR">
+                <img src="vespas.png" alt="Logo VESPAS" class="vespas-logo-inline">
+            </a>
+        </p>
+    </div>
+</footer>
