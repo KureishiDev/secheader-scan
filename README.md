@@ -26,7 +26,8 @@ O WebSec Auditor divide a análise em camadas de segurança. Abaixo estão os m�
 ### 1. Dashboard de Segurança (Score & Headers)
 A primeira linha de defesa. O sistema analisa cabeçalhos HTTP críticos (como CSP, HSTS e X-Frame-Options) e atribui uma nota de **A+ a F** baseada nas melhores práticas da OWASP.
 
-![Screenshot do Dashboard com Nota e Headers](screenshots/dashboard.png)
+<img width="868" height="643" alt="image" src="https://github.com/user-attachments/assets/df22f721-3b02-4ba6-9935-12278622d8e3" />
+
 *Exibe visualmente quais proteções estão ativas (Verde) ou ausentes (Vermelho).*
 
 ### 2. Infraestrutura e Criptografia
@@ -34,7 +35,8 @@ Análise profunda da identidade e proteção do servidor.
 * **Auditoria SSL/TLS:** Verifica a validade do certificado, emissor (CA) e dias para expiração.
 * **Whois Intelligence:** Consulta dados de registro do domínio para identificar datas de criação e expiração (prevenção de Domain Hijacking).
 
-![Screenshot do SSL e Whois](screenshots/infra.png)
+<img width="872" height="345" alt="image" src="https://github.com/user-attachments/assets/d1a31784-2802-43e1-abda-f905b39d6287" />
+
 
 ### 3. Inteligência de DNS & E-mail
 Verifica se o domínio possui proteções contra **Phishing** e **Spoofing** de e-mail.
@@ -42,7 +44,8 @@ Verifica se o domínio possui proteções contra **Phishing** e **Spoofing** de 
 * **DMARC:** O domínio rejeita e-mails falsos?
 * **MX Records:** Mapeamento de servidores de e-mail.
 
-![Screenshot do DNS e Email](screenshots/dns.png)
+<img width="418" height="251" alt="image" src="https://github.com/user-attachments/assets/f1ded6c2-e1da-4cde-8fa1-43bb3be23546" />
+
 
 ### 4. Reconhecimento (OSINT & Superfície de Ataque)
 Módulos focados em descobrir o que não está óbvio na página inicial.
@@ -50,7 +53,9 @@ Módulos focados em descobrir o que não está óbvio na página inicial.
 * **LinkFinder (API Discovery):** Análise estática do código-fonte para encontrar possíveis rotas de API (`/api/v1/...`) e vazamento de chaves.
 * **Arquivos Sensíveis:** Verifica a existência de `robots.txt`, `sitemap.xml` e `security.txt`.
 
-![Screenshot do OSINT e APIs](screenshots/osint.png)
+<img width="898" height="604" alt="image" src="https://github.com/user-attachments/assets/d0999d35-db21-4165-b5fb-2e40ca5cae56" />
+<img width="893" height="530" alt="image" src="https://github.com/user-attachments/assets/cf7da156-c3cf-4ba0-b133-7f4b43ebac98" />
+
 
 ### 5. Aplicação & Frontend
 Análise das tecnologias que sustentam o site.
@@ -58,7 +63,6 @@ Análise das tecnologias que sustentam o site.
 * **Auditoria de Cookies:** Verifica se os cookies de sessão possuem as flags `Secure` e `HttpOnly`.
 * **SRI (Subresource Integrity):** Checa se scripts externos possuem integridade criptográfica para prevenir ataques de Supply Chain.
 
-![Screenshot da Stack e Cookies](screenshots/tech.png)
 
 ---
 
