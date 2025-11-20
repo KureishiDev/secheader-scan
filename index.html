@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecHeader // Cyber Scanner</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>
+                <img src="logo.png" alt="Logo SecHeader" class="logo-img">
+                <div>
+                SecHeader <span class="neon-text">Scan</span>
+                </div>
+            </h1>
+            <p class="subtitle">ANÁLISE DE SEGURANÇA DE CABEÇALHOS HTTP</p>
+        </header>
+
+        <div class="search-card">
+            <form class="search-box" id="scanForm">
+                <input type="text" id="urlInput" placeholder="DIGITE A URL (EX: GOOGLE.COM)" required autocomplete="off">
+                <button type="submit">INICIAR SCAN</button>
+            </form>
+
+            <div id="loadingArea" class="hidden">
+                <p class="loader-text">ESTABELECENDO CONEXÃO SEGURA...</p>
+                <div class="cyber-loader"></div>
+            </div>
+        </div>
+
+        <div id="resultsArea" class="hidden">
+            <div class="results-container">
+                
+                <div class="card score-card">
+                    <div class="grade-circle" id="scoreCircle">?</div>
+                    <span class="url-target" id="displayUrl">---</span>
+                    <p id="scoreText" style="font-weight: bold; letter-spacing: 1px;">---</p>
+                </div>
+
+                <div class="card headers-list">
+                    <h3 class="report-title">RELATÓRIO TÉCNICO</h3>
+                    <div id="headersContainer"></div>
+                </div>
+            </div>
+        </div>
+
+ </div> <footer>
+        <div class="footer-content">
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
+                <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
+            </a>
+            
+            <span class="separator">//</span>
+            
+            <p>
+                Projeto desenvolvido por 
+                <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">
+                    Vinicius Wandembruck
+                </a>&trade;
+            </p>
+        </div>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>
