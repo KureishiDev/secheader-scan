@@ -7,7 +7,34 @@ from urllib.parse import urlparse
 app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
 
-# Cabeçalhos de segurança que vamos buscar
+# --- INJETOR DE CABEÇALHOS DE SEGURANÇA (AUTO-BLINDAGEM) ---
+@app.after_request
+def add_security_headers(response):
+    # 1. HSTS: Força HTTPS por 1 ano
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    # 2. CSP: Lista branca do que pode carregar.
+    # 'self' = arquivos locais (seu js, css, logo)
+    # 'https://licensebuttons.net' = permite a imagem do footer CC BY
+    # 'unsafe-inline' = permite estilos direto nas tags (necessário para nosso CSS dinâmico)
+    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net data:;"
+    
+    # 3. X-Frame: Impede que coloquem seu site num iframe (anti-clickjacking)
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    
+    # 4. No-Sniff: Impede adivinhação de tipo de arquivo
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    
+    # 5. Referrer: Privacidade ao clicar em links externos
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    
+    # 6. Permissions: Bloqueia acesso a hardware sensível
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    
+    return response
+# -----------------------------------------------------------
+
+# Lista de Cabeçalhos que vamos buscar nos ALVOS
 SECURITY_HEADERS = {
     "Strict-Transport-Security": "Força HTTPS. Protege contra Man-in-the-Middle.",
     "Content-Security-Policy": "A defesa #1 contra ataques XSS e Injection.",
@@ -31,6 +58,7 @@ def scan_url():
     if not raw_url:
         return jsonify({"success": False, "message": "A URL não pode estar vazia."}), 400
 
+    # Adiciona protocolo se faltar
     if not raw_url.startswith(('http://', 'https://')):
         target_url = 'https://' + raw_url
     else:
@@ -46,7 +74,10 @@ def scan_url():
 
     try:
         # 2. Requisição ao Site Alvo
+        # Usamos um User-Agent customizado
         headers_fake = {'User-Agent': 'Mozilla/5.0 (SecHeaderScan/1.0)'}
+        
+        # Timeout de 5 segundos para não travar
         response = requests.get(target_url, headers=headers_fake, timeout=5)
         site_headers = response.headers
         
@@ -57,6 +88,7 @@ def scan_url():
         # 3. Análise dos Headers
         for header, description in SECURITY_HEADERS.items():
             match = False
+            # Busca Case-Insensitive (ignora maiúsculas/minúsculas)
             for h in site_headers:
                 if h.lower() == header.lower():
                     match = True
