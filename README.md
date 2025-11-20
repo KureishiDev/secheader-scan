@@ -1,4 +1,4 @@
-# 🛡️ WebSec Auditor
+#  WebSec Auditor
 
 ![Project Status](https://img.shields.io/badge/status-live-success)
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
