@@ -13,27 +13,22 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // 1. Sanitização do Input no Frontend
         let url = urlInput.value.trim(); 
         
-        // Validação simples: comprimento minimo e presença de ponto
         if (url.length < 4 || !url.includes('.')) {
             showInputError();
             return;
         }
 
-        // Reset visual
         urlInput.classList.remove('input-error');
         submitBtn.disabled = true; 
 
-        // UI: Mostra Loading
         loadingArea.classList.remove('hidden');
         resultsArea.classList.add('hidden');
         headersContainer.innerHTML = ''; 
 
         try {
-            // 2. Envia para o Python
-            const response = await fetch('http://127.0.0.1:5000/api/scan', {
+            const response = await fetch('https://secheader-vinicius.onrender.com/api/scan', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url })
@@ -41,14 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            // UI: Esconde Loading
             loadingArea.classList.add('hidden');
             submitBtn.disabled = false;
 
             if (data.success) {
                 resultsArea.classList.remove('hidden');
                 
-                // Preenche dados
                 displayUrl.textContent = data.finalUrl;
                 
                 scoreCircle.textContent = data.grade;
@@ -60,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 renderHeaders(data.headers);
             } else {
-                // Erro vindo do backend 
                 alert("ERRO: " + data.message);
                 showInputError();
             }
