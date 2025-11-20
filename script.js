@@ -119,9 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sriContainer.innerHTML = html;
     }
 
-    // ... (Mantenha as outras funções: renderDNS, renderTech, renderCookies, renderSSL, etc.) ...
-    // Copiar das versões anteriores para não ficar muito longo aqui. 
-    // Se precisar que eu repita todas, me avise.
+    
     
     function renderDNS(dns, files) {
         if (!dnsContainer) return;
@@ -139,3 +137,4 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSubdomains(subs) { if (!fullReportContainer || subs.length === 0) return; let h=`<div class="card" style="margin-top:20px;"><h3 class="report-title">ATIVOS (OSINT)</h3><table><thead><tr><th>Subdomínio</th><th>IP</th><th>Status</th></tr></thead><tbody>`; subs.forEach(s=>{ h+=`<tr><td>${s.subdomain}</td><td>${s.ip}</td><td class="badge pass">${s.status}</td></tr>`; }); h+=`</tbody></table></div>`; fullReportContainer.innerHTML=h; }
     function renderHeaders(headers) { headers.forEach(h => { const d = document.createElement('div'); d.className='header-item'; let b=h.status==='pass'?'pass':'fail'; let v=h.value!=='N/A'?`<code class="header-value">${h.value}</code>`:''; d.innerHTML=`<div class="header-info"><strong>${h.name}</strong><span class="header-desc">${h.desc}</span>${v}</div><span class="badge ${b}">${h.status==='pass'?'ATIVO':'AUSENTE'}</span>`; headersContainer.appendChild(d); }); }
 });
+
