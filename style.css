@@ -1,3 +1,4 @@
+/* --- CYBER THEME VARIABLES --- */
 :root {
     --bg-color: #050505;       
     --card-bg: #0f0f0f;        
@@ -21,6 +22,7 @@ body {
     background-image: radial-gradient(circle at center, #111 0%, #000 100%);
 }
 
+/* --- Layout Container --- */
 .container {
     width: 100%;
     max-width: 900px;
@@ -33,6 +35,7 @@ body {
     transition: all 0.5s ease;
 }
 
+/* --- Header e Logo --- */
 header { 
     text-align: center; 
     margin-bottom: 40px; 
@@ -73,6 +76,7 @@ h1 {
     letter-spacing: 1px;
 }
 
+/* --- CARD DO FORMULÁRIO --- */
 .search-card {
     background: var(--card-bg);
     padding: 40px;
@@ -149,6 +153,7 @@ button:hover {
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
+/* --- RESULTADOS --- */
 .results-container {
     display: grid;
     grid-template-columns: 1fr 2fr;
@@ -190,26 +195,76 @@ button:hover {
 .header-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
+    align-items: flex-start; /* Alinha no topo caso tenha múltiplas linhas */
+    padding: 12px 0;
     border-bottom: 1px solid #222;
 }
 .header-item:last-child { border-bottom: none; }
 
-.header-info strong { display: block; font-size: 0.95rem; color: #eee; }
-.header-desc { font-size: 0.75rem; color: #555; }
+.header-info { flex: 1; padding-right: 15px; }
+.header-info strong { display: block; font-size: 0.95rem; color: #eee; margin-bottom: 3px;}
+.header-desc { font-size: 0.75rem; color: #555; display: block; }
+
+/* Estilo para o valor do cabeçalho (NOVO) */
+.header-value {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    background: #181818; 
+    padding: 6px 8px;
+    border-left: 3px solid var(--neon-dim);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: monospace;
+}
 
 .badge {
     font-size: 0.7rem;
-    padding: 2px 8px;
+    padding: 4px 8px;
     border: 1px solid;
     text-transform: uppercase;
     letter-spacing: 1px;
+    white-space: nowrap;
 }
 
 .badge.pass { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 5px rgba(0,255,65,0.2); }
 .badge.fail { color: var(--danger); border-color: var(--danger); opacity: 0.7; }
 
+/* --- ESTILOS PARA TABELA OSINT (NOVO) --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    border: 1px solid #222;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #222;
+}
+
+th {
+    color: var(--neon-green);
+    background-color: #111;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+}
+
+td {
+    color: var(--text-primary);
+    font-family: monospace;
+}
+
+tr:hover td {
+    background-color: #161616;
+}
+
+/* --- Loading --- */
 .hidden { display: none !important; }
 
 .loader-text {
@@ -244,6 +299,7 @@ button:hover {
     100% { left: 100%; } 
 }
 
+/* --- Footer --- */
 footer {
     width: 100%;
     padding: 15px 0;
@@ -288,6 +344,7 @@ footer:hover .author {
     text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
 }
 
+/* --- Mobile --- */
 @media (max-width: 768px) {
     .search-box { 
         flex-direction: column; 
@@ -306,5 +363,19 @@ footer:hover .author {
         flex-direction: column;
         gap: 10px;
     }
+    
+    /* Ajuste da tabela no mobile */
+    th, td { padding: 8px; font-size: 0.8rem; }
 }
 
+.badge.pass { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 5px rgba(0,255,65,0.2); }
+.badge.fail { color: var(--danger); border-color: var(--danger); opacity: 0.7; }
+
+/* NOVO: Badge Amarelo para Alertas/APIs */
+.badge.warn { 
+    color: #eab308; /* Amarelo Cyber */
+    border-color: #eab308; 
+    opacity: 0.9; 
+}
+
+/* ... */
