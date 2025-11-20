@@ -9,7 +9,10 @@ CORS(app)
 @app.after_request
 def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net data:;"
+    
+    # LINHA CORRIGIDA: Uso de aspas triplas (triplos apóstrofos) para evitar erro de sintaxe
+    response.headers['Content-Security-Policy'] = """default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net data:;"""
+    
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
