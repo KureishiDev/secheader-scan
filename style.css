@@ -59,7 +59,7 @@ h1 {
 }
 
 .logo-img {
-    height: 80px; 
+    height: 180px; 
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.3));
@@ -307,3 +307,4 @@ footer:hover .author {
         gap: 10px;
     }
 }
+
