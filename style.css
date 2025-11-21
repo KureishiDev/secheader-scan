@@ -202,26 +202,38 @@ footer:hover .author { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 25
 
 
 
+/* --- MODULO LEAK RADAR (VISUAL CORRIGIDO) --- */
+
+/* 1. O Card Principal volta a ser cinza (igual a home) */
 .search-card.danger-mode {
-    border-color: var(--danger);
+    border: 1px solid #333; /* Borda cinza discreta */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
+/* 2. Apenas a LINHA DO TOPO fica vermelha (O degradê) */
+.search-card.danger-mode::before {
+    background: linear-gradient(90deg, transparent, var(--danger), transparent);
+}
+
+/* 3. Hover do Card: Aí sim a borda acende em vermelho */
 .search-card.danger-mode:hover {
     border-color: var(--danger);
     box-shadow: 0 0 25px rgba(255, 51, 51, 0.15);
 }
 
-
+/* 4. Inputs dentro do Radar */
 .search-card.danger-mode input {
-    color: var(--danger); 
+    color: var(--danger); /* Texto vermelho */
+    border-color: #333;   /* Borda cinza inicial (igual home) */
 }
 
+/* Foco no input: Brilha vermelho */
 .search-card.danger-mode input:focus {
     border-color: var(--danger);
-    box-shadow: 0 0 10px rgba(255, 51, 51, 0.3); 
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
 }
 
-
+/* 5. Botão dentro do Radar (Sempre vermelho) */
 .search-card.danger-mode button {
     color: var(--danger);
     border-color: var(--danger);
@@ -229,11 +241,11 @@ footer:hover .author { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 25
 
 .search-card.danger-mode button:hover {
     background-color: var(--danger);
-    color: #000; 
+    color: #000;
     box-shadow: 0 0 20px var(--danger);
 }
 
-
+/* --- ANIMAÇÃO DE RADAR (Mantenha igual) --- */
 .radar-container {
     position: relative;
     width: 150px;
@@ -271,7 +283,7 @@ footer:hover .author { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 25
     to { transform: rotate(360deg); }
 }
 
-
+/* Cards de Vazamento */
 .leak-card {
     background: #111;
     border-left: 4px solid var(--danger);
