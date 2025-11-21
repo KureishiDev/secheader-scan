@@ -14,7 +14,7 @@ import whois
 app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
 
-# --- AUTO-BLINDAGEM ---
+
 @app.after_request
 def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
@@ -34,7 +34,7 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "Bloqueio de hardware."
 }
 
-# --- FUNÇÕES DE ANÁLISE ---
+
 
 def get_whois_info(domain):
     try:
@@ -43,12 +43,7 @@ def get_whois_info(domain):
         if isinstance(creation, list): creation = creation[0]
         expiration = w.expiration_date
         if isinstance(expiration, list): expiration = expiration[0]
-        return {
-            "registrar": w.registrar,
-            "creation_date": str(creation),
-            "expiration_date": str(expiration),
-            "emails": w.emails if w.emails else "Oculto"
-        }
+        return {"registrar": w.registrar, "creation_date": str(creation), "expiration_date": str(expiration), "emails": w.emails if w.emails else "Oculto"}
     except: return {"error": "Dados WHOIS ocultos."}
 
 def check_sri(html_content):
@@ -159,6 +154,40 @@ def detect_technologies(headers, html, cookies):
     
     return techs
 
+
+def check_leaks_real(email):
+    try:
+        url = f"https://leakcheck.io/api/public?check={email}"
+        headers = {'User-Agent': 'Mozilla/5.0 (WebSecAuditor)'}
+        response = requests.get(url, headers=headers, timeout=10)
+        data = response.json()
+        
+        if not data.get('success'):
+            return {"count": 0, "breaches": [], "status": "SAFE"}
+            
+        sources = data.get('sources', [])
+        breaches_formatted = []
+        
+        for source in sources:
+          
+            leak_name = source.get('name') if isinstance(source, dict) else str(source)
+            leak_date = source.get('date', 'Data Desconhecida') if isinstance(source, dict) else 'Data Desconhecida'
+            
+            breaches_formatted.append({
+                "name": leak_name, 
+                "date": leak_date,
+                "desc": "Vazamento de credenciais indexado publicamente."
+            })
+            
+        return {
+            "count": len(breaches_formatted),
+            "breaches": breaches_formatted,
+            "status": "LEAKED" if len(breaches_formatted) > 0 else "SAFE"
+        }
+    except Exception as e:
+        print(f"Erro LeakCheck: {e}")
+        return {"count": 0, "breaches": [], "status": "ERROR"}
+
 # --- ROTAS ---
 @app.route('/')
 def home(): return send_from_directory('.', 'index.html')
@@ -168,6 +197,20 @@ def about(): return send_from_directory('.', 'about.html')
 
 @app.route('/feedback')
 def feedback(): return send_from_directory('.', 'feedback.html')
+
+@app.route('/radar')
+def radar_page(): return send_from_directory('.', 'radar.html')
+
+@app.route('/api/radar', methods=['POST'])
+def api_radar():
+    data = request.json
+    email = data.get('email', '').strip()
+    
+    if not email or "@" not in email:
+        return jsonify({"success": False, "message": "E-mail inválido"}), 400
+    
+    result = check_leaks_real(email)
+    return jsonify({"success": True, "data": result})
 
 @app.route('/api/scan', methods=['POST'])
 def scan_url():
@@ -189,7 +232,6 @@ def scan_url():
         session = requests.Session()
         resp = session.get(target, headers=headers_ua, timeout=10)
         
-        # Executa Scanners
         ssl_data = get_ssl_info(hostname)
         sub_data = check_common_subdomains(hostname)
         api_data = extract_api_patterns(resp.text)
@@ -200,7 +242,6 @@ def scan_url():
         whois_data = get_whois_info(hostname)
         sri_data = check_sri(resp.text)
 
-        # Score
         results = []
         score = 0
         total = len(SECURITY_HEADERS) + 1
@@ -214,7 +255,7 @@ def scan_url():
         if ssl_data['ssl_ok']: score += 1
         
         pct = (score / total) * 100
-        if pct >= 95: grade, color, msg = "A+", "#00ff41", "BLINDADO"
+        if pct >= 95: grade, color, msg = "A+", "#00ff41", "BLINDAGEM TOTAL"
         elif pct >= 80: grade, color, msg = "A", "#00ff41", "EXCELENTE"
         elif pct >= 60: grade, color, msg = "B", "#eab308", "SEGURO"
         elif pct >= 40: grade, color, msg = "C", "#f97316", "ATENÇÃO"

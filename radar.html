@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leak Radar // WebSec</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="/logoi.png">
+</head>
+<body class="radar-page">
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">WebSec<span style="color:var(--neon-green);">//</span>Auditor</a>
+            <div class="nav-links">
+                <a href="/">Scanner</a>
+                <a href="/radar" class="active">Vazamentos</a>
+                <a href="/about">Sobre Mim</a>
+                <a href="/feedback">Feedback</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>
+                <img src="gif.gif" alt="Logo WebSec" class="logo-img">
+                <div>
+                    Leak <span class="neon-text" style="color: var(--danger); text-shadow: 0 0 15px var(--danger);">Radar</span>
+                </div>
+            </h1>
+            <p class="subtitle">MONITORAMENTO DE VAZAMENTO DE CREDENCIAIS</p>
+        </header>
+
+        <div class="search-card danger-mode">
+            <form class="search-box" id="radarForm">
+                <input type="email" id="emailInput" placeholder="DIGITE O E-MAIL (EX: USER@EMPRESA.COM)" required autocomplete="off">
+                <button type="submit">INVESTIGAR</button>
+            </form>
+        </div>
+
+        <div id="radarResults" class="hidden" style="margin-top: 40px;">
+            
+            <div class="radar-container">
+                <div class="radar-sweep"></div>
+                <div class="radar-stat" id="leakCount">0</div>
+            </div>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">RESULTADO DA ANÁLISE</p>
+
+            <div id="breachList"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
+                <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
+            </a>
+            <span class="separator">//</span>
+            <p>
+                Projeto desenvolvido por 
+                <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">Vinicius Wandembruck</a>&trade;
+                <span class="separator-inline"> // </span>
+                <a href="https://utfpr.curitiba.br/vespas/" target="_blank" title="VESPAS - UTFPR">
+                    <img src="vespas.png" alt="Logo VESPAS" class="vespas-logo-inline">
+                </a>
+            </p>
+        </div>
+    </footer>
+    
+    <script src="radar.js"></script>
+</body>
+</html>

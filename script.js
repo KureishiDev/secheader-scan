@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let lastScanData = null;
 
-    // Validacao critica
+    
     if (!form || !urlInput || !submitBtn) return;
 
     if (downloadBtn) {
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showInputError() { urlInput.classList.add('input-error'); urlInput.focus(); setTimeout(() => { urlInput.classList.remove('input-error'); }, 1000); }
 
-    // Render Functions
+    
     function renderHeaders(headers) {
         if (!headersContainer) return;
         headers.forEach(h => {
