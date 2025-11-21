@@ -1,20 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Iniciando WebSec Script...");
+
+    // --- ELEMENTOS ---
     const form = document.getElementById('scanForm');
     const urlInput = document.getElementById('urlInput');
     const loadingArea = document.getElementById('loadingArea');
     const resultsArea = document.getElementById('resultsArea');
-    
+    const submitBtn = form ? form.querySelector('button') : null;
+    const downloadBtn = document.getElementById('downloadBtn');
+    const pdfBtn = document.getElementById('pdfBtn');
+
+    // --- RESULTADOS E CONTAINERS ---
     const displayUrl = document.getElementById('displayUrl');
     const scoreCircle = document.getElementById('scoreCircle');
     const scoreText = document.getElementById('scoreText');
     const headersContainer = document.getElementById('headersContainer');
     
-    // Verifica se botões existem para não dar erro
-    const submitBtn = form ? form.querySelector('button') : null;
-    const downloadBtn = document.getElementById('downloadBtn');
-    const pdfBtn = document.getElementById('pdfBtn');
-
-    // Containers
+    const wafContainer = document.getElementById('wafContainer'); // NOVO
+    const geoContainer = document.getElementById('geoContainer');
     const sslContainer = document.getElementById('sslContainer');
     const whoisContainer = document.getElementById('whoisContainer');
     const dnsContainer = document.getElementById('dnsContainer');
@@ -22,89 +25,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const sriContainer = document.getElementById('sriContainer');
     const cookieContainer = document.getElementById('cookieContainer');
     const apiContainer = document.getElementById('apiContainer');
-    const dorksContainer = document.getElementById('dorksContainer'); 
+    const dorksContainer = document.getElementById('dorksContainer');
     const fullReportContainer = document.getElementById('fullReportContainer');
     
     let lastScanData = null;
 
-    // 1. SEGURANÇA: Se não estiver na home, para o script
     if (!form || !urlInput || !submitBtn) return;
 
-    // 2. DOWNLOAD JSON
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', () => {
-            if (!lastScanData) return;
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastScanData, null, 4));
-            const node = document.createElement('a');
-            node.setAttribute("href", dataStr);
-            node.setAttribute("download", "websec_report.json");
-            document.body.appendChild(node); node.click(); node.remove();
-        });
-    }
+    // Downloads
+    if (downloadBtn) { downloadBtn.addEventListener('click', () => { if (!lastScanData) return; const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastScanData, null, 4)); const node = document.createElement('a'); node.setAttribute("href", dataStr); node.setAttribute("download", "websec_report.json"); document.body.appendChild(node); node.click(); node.remove(); }); }
+    if (pdfBtn) { pdfBtn.addEventListener('click', () => { if (!resultsArea || resultsArea.classList.contains('hidden')) return; const btnContainer = document.querySelector('.action-buttons'); if(btnContainer) btnContainer.style.display = 'none'; const opt = { margin: [10, 10], filename: 'WebSec_Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#050505' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; if (typeof html2pdf !== 'undefined') { html2pdf().set(opt).from(resultsArea).save().then(() => { if(btnContainer) btnContainer.style.display = 'flex'; }); } else { alert("Erro PDF."); if(btnContainer) btnContainer.style.display = 'flex'; } }); }
 
-    // 3. DOWNLOAD PDF
-    if (pdfBtn) {
-        pdfBtn.addEventListener('click', () => {
-            if (!resultsArea || resultsArea.classList.contains('hidden')) return;
-            const btnContainer = document.querySelector('.action-buttons');
-            if(btnContainer) btnContainer.style.display = 'none';
-
-            const opt = {
-                margin: [10, 10], filename: 'WebSec_Report.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, backgroundColor: '#050505' },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            if (typeof html2pdf !== 'undefined') {
-                html2pdf().set(opt).from(resultsArea).save().then(() => {
-                    if(btnContainer) btnContainer.style.display = 'flex';
-                });
-            } else {
-                alert("Biblioteca PDF não carregada.");
-                if(btnContainer) btnContainer.style.display = 'flex';
-            }
-        });
-    }
-
-    // 4. EVENTO DE SCAN
+    // SCAN EVENT
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // IMPEDE O REFRESH
-        
+        e.preventDefault();
         let url = urlInput.value.trim(); 
         if (url.length < 4 || !url.includes('.')) { showInputError(); return; }
 
-        urlInput.classList.remove('input-error');
-        submitBtn.disabled = true; 
-        loadingArea.classList.remove('hidden');
-        resultsArea.classList.add('hidden');
-        
+        urlInput.classList.remove('input-error'); submitBtn.disabled = true; 
+        loadingArea.classList.remove('hidden'); resultsArea.classList.add('hidden');
         clearContainers();
 
         try {
-            const response = await fetch('/api/scan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: url })
-            });
-
+            const response = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: url }) });
             const data = await response.json();
             lastScanData = data; 
-
-            loadingArea.classList.add('hidden');
-            submitBtn.disabled = false;
+            loadingArea.classList.add('hidden'); submitBtn.disabled = false;
 
             if (data.success) {
                 resultsArea.classList.remove('hidden');
-                
                 if(displayUrl) displayUrl.textContent = data.finalUrl;
                 if(scoreCircle) { scoreCircle.textContent = data.grade; scoreCircle.style.borderColor = data.scoreColor; scoreCircle.style.color = data.scoreColor; }
                 if(scoreText) { scoreText.textContent = data.message; scoreText.style.color = data.scoreColor; }
-
                 let hostname = data.finalUrl.replace(/^https?:\/\//, '').split('/')[0];
 
-                // Renderiza Módulos
-                if(headersContainer) renderHeaders(data.headers);
+                // Render
+                renderHeaders(data.headers);
+                if(data.waf_info) renderWaf(data.waf_info); // NOVO
+                if(data.geo_info) renderGeo(data.geo_info);
                 if(data.ssl_info) renderSSL(data.ssl_info);
                 if(data.whois_info) renderWhois(data.whois_info);
                 if(data.dns_info) renderDNS(data.dns_info, data.files_info);
@@ -112,80 +70,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(data.sri_info) renderSRI(data.sri_info);
                 if(data.cookie_info) renderCookies(data.cookie_info);
                 if(data.api_info) renderApis(data.api_info);
-                
-                renderDorks(hostname); // DORKS CORRIGIDO
-                
+                renderDorks(hostname);
                 if(data.subdomain_info) renderSubdomains(data.subdomain_info);
-
-            } else {
-                alert("ERRO: " + data.message); showInputError();
-            }
-        } catch (error) {
-            console.error(error);
-            loadingArea.classList.add('hidden');
-            submitBtn.disabled = false;
-            alert('ERRO CRÍTICO: Servidor offline.');
-        }
+            } else { alert("ERRO: " + data.message); showInputError(); }
+        } catch (error) { console.error(error); loadingArea.classList.add('hidden'); submitBtn.disabled = false; alert('ERRO CRÍTICO.'); }
     });
 
     function showInputError() { urlInput.classList.add('input-error'); urlInput.focus(); setTimeout(() => { urlInput.classList.remove('input-error'); }, 1000); }
+    function clearContainers() { const list = [headersContainer, wafContainer, sslContainer, whoisContainer, dnsContainer, techContainer, sriContainer, cookieContainer, apiContainer, dorksContainer, fullReportContainer, geoContainer]; list.forEach(c => { if(c) c.innerHTML = ''; }); }
 
-    function clearContainers() {
-        const list = [headersContainer, sslContainer, whoisContainer, dnsContainer, techContainer, sriContainer, cookieContainer, apiContainer, dorksContainer, fullReportContainer];
-        list.forEach(c => { if(c) c.innerHTML = ''; });
-    }
+    // --- RENDER WAF (NOVO) ---
+    function renderWaf(w) {
+        if(!wafContainer) return;
+        let hasWaf = w.has_waf;
+        let color = hasWaf ? 'var(--neon-green)' : 'var(--danger)'; // Verde se tiver WAF, Vermelho se não (Alerta)
+        let icon = hasWaf ? '🛡️ PROTEGIDO' : '⚠️ SEM PROTEÇÃO EXTERNA';
+        let msg = hasWaf ? `WAF DETECTADO: <strong style="color:#fff;">${w.name}</strong>` : `Nenhum Firewall de Aplicação (WAF) comercial foi detectado via headers.`;
+        
+        // Inverte a lógica visual: Se NÃO tem WAF, mostra como Warning
+        if (!hasWaf) color = '#eab308'; // Amarelo (Alerta) em vez de erro
 
-    // --- RENDERIZADOR DE DORKS (CORRIGIDO PARA VERDE) ---
-    function renderDorks(d) {
-        if (!dorksContainer) return;
-
-        const dk = [
-            {title:"Arquivos Públicos",query:`site:${d} filetype:pdf OR filetype:doc OR filetype:xls OR filetype:ppt OR filetype:txt`},
-            {title:"Páginas de Login",query:`site:${d} inurl:login OR inurl:admin OR inurl:cpanel`},
-            {title:"Arquivos de Config",query:`site:${d} ext:xml OR ext:conf OR ext:cnf OR ext:reg OR ext:inf OR ext:rdp OR ext:cfg`},
-            {title:"Backup & SQL",query:`site:${d} ext:sql OR ext:dbf OR ext:mdb OR ext:bkp OR ext:bak OR ext:old`},
-            {title:"Directory Listing",query:`site:${d} intitle:"index of"`},
-            {title:"Subdomínios Google",query:`site:${d} -www`},
-            {title:"Pastebin Leaks",query:`site:pastebin.com "${d}"`},
-            {title:"Github Leaks",query:`site:github.com "${d}"`}
-        ];
-
-        // Ajuste de cor para var(--neon-green)
-        let h = `
-            <div class="card" style="margin-bottom:20px; border-left:4px solid var(--neon-green);">
-                <h3 class="report-title" style="color:var(--neon-green);">GOOGLE HACKING (DORKS)</h3>
-                <p style="font-size:0.75rem; color:#888; margin-bottom:15px;">*Links diretos para pesquisas avançadas no Google.</p>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;">
-        `;
-
-        dk.forEach(k => {
-            const l = `https://www.google.com/search?q=${encodeURIComponent(k.query)}`;
-            h += `
-                <a href="${l}" target="_blank" style="text-decoration:none;">
-                    <div style="
-                        background:#111; 
-                        border:1px solid #333; 
-                        padding:15px; 
-                        border-radius:4px; 
-                        text-align:center; 
-                        transition:all 0.3s; 
-                        color:#ccc; 
-                        font-size:0.85rem;
-                        display:flex; align-items:center; justify-content:center; height:100%;"
-                        onmouseover="this.style.borderColor='var(--neon-green)'; this.style.boxShadow='0 0 15px rgba(0, 255, 65, 0.2)'"
-                        onmouseout="this.style.borderColor='#333'; this.style.boxShadow='none'">
-                        
-                        <span style="display:block; color:var(--neon-green); font-weight:bold;">🔍 ${k.title}</span>
+        let html = `
+            <div class="card" style="margin-top:20px; border-left:4px solid ${color};">
+                <h3 class="report-title" style="color:${color}">FIREWALL DE APLICAÇÃO (WAF)</h3>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 2rem;">${hasWaf ? '🏰' : '🚧'}</div>
+                    <div>
+                        <strong style="display:block; font-size:0.9rem; color:${color}; margin-bottom:5px;">${icon}</strong>
+                        <span style="color:#ccc; font-size:0.85rem;">${msg}</span>
+                        ${hasWaf ? `<div style="font-size:0.7rem; color:#666; margin-top:5px;">Assinatura: ${w.signature}</div>` : ''}
                     </div>
-                </a>
-            `;
-        });
-
-        h += `</div></div>`;
-        dorksContainer.innerHTML = h;
+                </div>
+            </div>`;
+        wafContainer.innerHTML = html;
     }
 
-    // ... (Demais funções mantidas iguais) ...
+    // ... (Mantenha todas as outras funções de render igual antes: renderGeo, renderHeaders, etc) ...
+    // Copie do script anterior para não ficar gigante aqui, só adicionei o renderWaf
+    function renderGeo(g){if(!geoContainer||g.error)return;let f=g.countryCode?`https://flagsapi.com/${g.countryCode}/flat/64.png`:'';let i=f?`<img src="${f}" style="height:30px;margin-right:10px;">`:'🌍';geoContainer.innerHTML=`<div class="card" style="margin-top:20px;border-left:4px solid var(--neon-green);"><h3 class="report-title" style="color:var(--neon-green)">GEO-INTELIGÊNCIA</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"><div style="display:flex;align-items:center;">${i}<div><strong style="display:block;color:#666;font-size:0.8rem;">LOCAL</strong><span style="color:#fff;">${g.city}, ${g.country}</span></div></div><div><strong style="display:block;color:#666;font-size:0.8rem;">ISP</strong><span style="color:#fff;">${g.isp}</span></div><div style="grid-column:span 2;"><strong style="display:block;color:#666;font-size:0.8rem;">IP</strong><code class="header-value">${g.ip}</code></div></div></div>`;}
     function renderHeaders(h){if(!headersContainer)return;h.forEach(x=>{const d=document.createElement('div');d.className='header-item';let b=x.status==='pass'?'pass':'fail';let v=x.value!=='N/A'?`<code class="header-value">${x.value}</code>`:'';d.innerHTML=`<div class="header-info"><strong>${x.name}</strong><span class="header-desc">${x.desc}</span>${v}</div><span class="badge ${b}">${x.status==='pass'?'ATIVO':'AUSENTE'}</span>`;headersContainer.appendChild(d);});}
     function renderSSL(s){if(!sslContainer)return;let c=s.ssl_ok?'var(--neon-green)':'var(--danger)';let h=`<div class="card" style="border-left:4px solid ${c};margin-bottom:20px;"><h3 class="report-title" style="color:${c}">AUDITORIA SSL/TLS</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"><div><strong style="display:block;color:#666;font-size:0.8rem;">STATUS</strong><span style="color:${c};font-weight:bold;">${s.ssl_ok?'🔒 BLINDADO':'🔓 INSEGURO'}</span></div>`;if(s.ssl_ok){h+=`<div><strong style="display:block;color:#666;font-size:0.8rem;">DIAS</strong><span style="color:#fff;">${s.expires_in_days}</span></div><div style="grid-column:span 2;margin-top:10px;"><strong style="display:block;color:#666;font-size:0.8rem;">EMISSOR</strong><code class="header-value" style="margin-top:2px;">${s.issuer}</code></div>`;}else{h+=`<div style="grid-column:span 2;"><strong style="color:var(--danger)">ERRO:</strong> ${s.error}</div>`;}h+=`</div></div>`;sslContainer.innerHTML=h;}
     function renderWhois(w){if(!whoisContainer||w.error)return;let h=`<div class="card" style="margin-bottom:20px;border-left:4px solid var(--neon-green);"><h3 class="report-title" style="color:var(--neon-green)">DOMAIN INTEL (WHOIS)</h3><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;"><div><strong style="color:#888;font-size:0.7rem;">REGISTRAR</strong><div style="color:#fff;font-size:0.9rem;">${w.registrar||'N/A'}</div></div><div><strong style="color:#888;font-size:0.7rem;">CRIAÇÃO</strong><div style="color:#fff;font-size:0.9rem;">${w.creation_date||'N/A'}</div></div><div><strong style="color:#888;font-size:0.7rem;">EXPIRAÇÃO</strong><div style="color:#fff;font-size:0.9rem;">${w.expiration_date||'N/A'}</div></div></div></div>`;whoisContainer.innerHTML=h;}
@@ -195,4 +117,5 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCookies(c){if(!cookieContainer||c.length===0)return;let h=`<div class="card" style="margin-bottom:20px;"><h3 class="report-title">INSPEÇÃO DE COOKIES</h3><table><thead><tr><th>Nome do Cookie</th><th>Flags de Segurança</th></tr></thead><tbody>`;c.forEach(x=>{let f=x.flags.map(i=>`<span class="badge pass">${i}</span>`).join(' ');if(x.flags[0]==='Nenhuma')f=`<span class="badge fail">Risco</span>`;h+=`<tr><td style="color:var(--text-primary);">${x.name}</td><td>${f}</td></tr>`;});h+=`</tbody></table></div>`;cookieContainer.innerHTML=h;}
     function renderApis(a){if(!apiContainer||a.length===0)return;let h=`<div class="card" style="margin-bottom:20px;"><h3 class="report-title">POSSÍVEIS ENDPOINTS (JS)</h3><table><thead><tr><th>Endpoint / String</th><th>Tipo</th></tr></thead><tbody>`;a.forEach(x=>{h+=`<tr><td style="word-break:break-all;color:var(--text-primary);">${x.content}</td><td class="badge warn">${x.type}</td></tr>`;});h+=`</tbody></table></div>`;apiContainer.innerHTML=h;}
     function renderSubdomains(s){if(!fullReportContainer||s.length===0)return;let h=`<div class="card" style="margin-top:20px;"><h3 class="report-title">ATIVOS ENCONTRADOS (OSINT)</h3><table><thead><tr><th>Subdomínio</th><th>IP Resolvido</th><th>Status</th></tr></thead><tbody>`;s.forEach(x=>{h+=`<tr><td>${x.subdomain}</td><td>${x.ip}</td><td class="badge pass">${x.status}</td></tr>`;});h+=`</tbody></table></div>`;fullReportContainer.innerHTML=h;}
+    function renderDorks(d){if(!dorksContainer)return;const dk=[{title:"Arquivos Públicos",query:`site:${d} filetype:pdf OR filetype:doc OR filetype:xls OR filetype:ppt OR filetype:txt`},{title:"Páginas de Login",query:`site:${d} inurl:login OR inurl:admin OR inurl:cpanel`},{title:"Arquivos de Config",query:`site:${d} ext:xml OR ext:conf OR ext:cnf OR ext:reg OR ext:inf OR ext:rdp OR ext:cfg`},{title:"Backup & SQL",query:`site:${d} ext:sql OR ext:dbf OR ext:mdb OR ext:bkp OR ext:bak OR ext:old`},{title:"Directory Listing",query:`site:${d} intitle:"index of"`},{title:"Subdomínios Google",query:`site:${d} -www`},{title:"Pastebin Leaks",query:`site:pastebin.com "${d}"`},{title:"Github Leaks",query:`site:github.com "${d}"`}];let h=`<div class="card" style="margin-bottom:20px;border-left:4px solid var(--neon-green);"><h3 class="report-title" style="color:var(--neon-green);">GOOGLE HACKING (DORKS)</h3><p style="font-size:0.75rem;color:#888;margin-bottom:15px;">*Links diretos para pesquisas avançadas no Google.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">`;dk.forEach(k=>{const l=`https://www.google.com/search?q=${encodeURIComponent(k.query)}`;h+=`<a href="${l}" target="_blank" style="text-decoration:none;"><div style="background:#111;border:1px solid #333;padding:12px;border-radius:4px;text-align:center;transition:all 0.3s;color:#ccc;font-size:0.85rem;"><span style="display:block;color:var(--neon-green);font-weight:bold;margin-bottom:5px;">🔍 ${k.title}</span>Abrir Pesquisa</div></a>`;});h+=`</div></div>`;dorksContainer.innerHTML=h;}
 });

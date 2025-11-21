@@ -18,7 +18,6 @@ CORS(app)
 @app.after_request
 def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    # CSP ajustada para permitir os recursos externos usados (Bandeiras, Avatares, etc)
     response.headers['Content-Security-Policy'] = """default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net https://ui-avatars.com https://utfpr.curitiba.br https://flagsapi.com data:;"""
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -36,8 +35,45 @@ SECURITY_HEADERS = {
 }
 
 # ==========================================
-# FUNÇÕES AUXILIARES (SCANNER)
+# FUNÇÕES DO SCANNER
 # ==========================================
+
+# --- NOVO: DETECTOR DE WAF (FIREWALL) ---
+def detect_waf(headers, cookies):
+    waf_info = {"has_waf": False, "name": "Nenhum WAF Detectado", "signature": "N/A"}
+    
+    # 1. Assinaturas em Headers
+    headers_lower = {k.lower(): v.lower() for k, v in headers.items()}
+    server = headers_lower.get('server', '')
+    
+    if 'cloudflare' in server or '__cfduid' in str(cookies):
+        return {"has_waf": True, "name": "Cloudflare", "signature": "Header: Server / Cookie: __cfduid"}
+    
+    if 'awselb' in str(cookies) or 'awsalb' in str(cookies) or 'x-amz-id-2' in headers_lower:
+        return {"has_waf": True, "name": "AWS WAF / Shield", "signature": "Cookie: AWSALB / Header: x-amz-id-2"}
+    
+    if 'akamai' in server or 'akamai' in headers_lower.get('x-akamai-transformed', ''):
+        return {"has_waf": True, "name": "Akamai", "signature": "Header: Server / X-Akamai"}
+    
+    if 'imperva' in server or 'incap_ses' in str(cookies):
+        return {"has_waf": True, "name": "Imperva Incapsula", "signature": "Cookie: incap_ses"}
+        
+    if 'azure' in headers_lower.get('x-azure-ref', ''):
+        return {"has_waf": True, "name": "Azure Front Door", "signature": "Header: x-azure-ref"}
+
+    if 'sucuri' in server or 'sucuri' in headers_lower.get('x-sucuri-id', ''):
+        return {"has_waf": True, "name": "Sucuri WAF", "signature": "Header: x-sucuri-id"}
+    if 'sucuri' in server or 'sucuri' in headers_lower.get('x-sucuri-id', ''):
+        return {"has_waf": True, "name": "Sucuri WAF", "signature": "Header: x-sucuri-id"}
+
+    # --- ADICIONE ISTO AQUI PARA DETECTAR O GOOGLE ---
+    if server in ['gws', 'esf', 'gse', 'sffe'] or 'gws' in server:
+        return {"has_waf": True, "name": "Google Front End (GFE)", "signature": "Server: gws (Google Infrastructure)"}
+    # -------------------------------------------------
+
+    
+
+    return waf_info
 
 def get_server_location(hostname):
     try:
@@ -45,13 +81,7 @@ def get_server_location(hostname):
         response = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
         data = response.json()
         if data['status'] == 'fail': return {"ip": ip, "country": "N/A", "isp": "N/A", "countryCode": ""}
-        return {
-            "ip": ip, 
-            "country": data.get('country'), 
-            "city": data.get('city'), 
-            "isp": data.get('isp'), 
-            "countryCode": data.get('countryCode')
-        }
+        return {"ip": ip, "country": data.get('country'), "city": data.get('city'), "isp": data.get('isp'), "countryCode": data.get('countryCode')}
     except: return {"error": "Falha Geo"}
 
 def get_whois_info(domain):
@@ -172,10 +202,6 @@ def detect_technologies(headers, html, cookies):
     except: pass
     return techs
 
-# ==========================================
-# FUNÇÕES NOVAS (LEAK RADAR & OSINT)
-# ==========================================
-
 def check_leaks_real(email):
     try:
         url = f"https://leakcheck.io/api/public?check={email}"
@@ -193,7 +219,6 @@ def check_leaks_real(email):
     except: return {"count": 0, "breaches": [], "status": "ERROR"}
 
 def check_username_osint(username):
-    # Gera lista de links para verificação manual
     sites = [
         {"name": "Instagram", "url": f"https://www.instagram.com/{username}/", "icon": "📸"},
         {"name": "Twitter / X", "url": f"https://twitter.com/{username}", "icon": "🐦"},
@@ -233,18 +258,15 @@ def radar_page(): return send_from_directory('.', 'radar.html')
 @app.route('/osint')
 def osint_page(): return send_from_directory('.', 'osint.html')
 
-# API 1: OSINT (PEGADA DIGITAL)
 @app.route('/api/osint', methods=['POST'])
 def api_osint():
     data = request.json
     username = data.get('username', '').strip()
     username = username.replace(' ', '')
-    if not username or len(username) < 2: 
-        return jsonify({"success": False, "message": "Username inválido"}), 400
+    if not username or len(username) < 2: return jsonify({"success": False, "message": "Username inválido"}), 400
     results = check_username_osint(username)
     return jsonify({"success": True, "data": results})
 
-# API 2: LEAK RADAR (VAZAMENTOS)
 @app.route('/api/radar', methods=['POST'])
 def api_radar():
     data = request.json
@@ -253,13 +275,11 @@ def api_radar():
     result = check_leaks_real(email)
     return jsonify({"success": True, "data": result})
 
-# API 3: MAIN SCANNER (SITE)
 @app.route('/api/scan', methods=['POST'])
 def scan_url():
     data = request.json
     raw_url = data.get('url', '').strip()
     if not raw_url: return jsonify({"success": False, "message": "URL Vazia"}), 400
-    
     if not raw_url.startswith(('http://', 'https://')): target = 'https://' + raw_url
     else: target = raw_url
 
@@ -284,6 +304,9 @@ def scan_url():
         whois_data = get_whois_info(hostname)
         sri_data = check_sri(resp.text)
         geo_data = get_server_location(hostname)
+        
+        # Executa WAF Detector (NOVO)
+        waf_data = detect_waf(resp.headers, session.cookies)
 
         results = []
         score = 0
@@ -311,6 +334,7 @@ def scan_url():
             "api_info": api_data, "cookie_info": cookie_data, "tech_info": tech_data,
             "dns_info": dns_data, "files_info": file_data, "whois_info": whois_data,
             "sri_info": sri_data, "geo_info": geo_data,
+            "waf_info": waf_data, # NOVO RETORNO
             "finalUrl": resp.url
         })
 
