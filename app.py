@@ -14,11 +14,12 @@ import whois
 app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
 
-
+# --- AUTO-BLINDAGEM ---
 @app.after_request
 def add_security_headers(response):
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Content-Security-Policy'] = """default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net https://ui-avatars.com https://utfpr.curitiba.br data:;"""
+    # CSP ajustada para permitir os recursos externos usados (Bandeiras, Avatares, etc)
+    response.headers['Content-Security-Policy'] = """default-src 'self' 'unsafe-inline'; img-src 'self' https://licensebuttons.net https://ui-avatars.com https://utfpr.curitiba.br https://flagsapi.com data:;"""
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
@@ -34,7 +35,24 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "Bloqueio de hardware."
 }
 
+# ==========================================
+# FUNÇÕES AUXILIARES (SCANNER)
+# ==========================================
 
+def get_server_location(hostname):
+    try:
+        ip = socket.gethostbyname(hostname)
+        response = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
+        data = response.json()
+        if data['status'] == 'fail': return {"ip": ip, "country": "N/A", "isp": "N/A", "countryCode": ""}
+        return {
+            "ip": ip, 
+            "country": data.get('country'), 
+            "city": data.get('city'), 
+            "isp": data.get('isp'), 
+            "countryCode": data.get('countryCode')
+        }
+    except: return {"error": "Falha Geo"}
 
 def get_whois_info(domain):
     try:
@@ -48,21 +66,20 @@ def get_whois_info(domain):
 
 def check_sri(html_content):
     sri_report = []
-    soup = BeautifulSoup(html_content, 'html.parser')
-    resources = soup.find_all(['script', 'link'])
-    for tag in resources:
-        src = tag.get('src') or tag.get('href')
-        if src and ('http' in src or '//' in src):
-            if tag.get('integrity'):
-                sri_report.append({"resource": src, "status": "pass", "msg": "Integrity Check Ativo"})
-            else:
-                sri_report.append({"resource": src, "status": "warn", "msg": "Sem SRI"})
+    try:
+        soup = BeautifulSoup(html_content, 'html.parser')
+        resources = soup.find_all(['script', 'link'])
+        for tag in resources:
+            src = tag.get('src') or tag.get('href')
+            if src and ('http' in src or '//' in src):
+                if tag.get('integrity'): sri_report.append({"resource": src, "status": "pass", "msg": "Integrity Check Ativo"})
+                else: sri_report.append({"resource": src, "status": "warn", "msg": "Sem SRI"})
+    except: pass
     return sri_report[:10]
 
 def check_dns_security(domain):
     dns_report = []
     try:
-        # SPF
         try:
             answers = dns.resolver.resolve(domain, 'TXT')
             spf_found = False
@@ -74,7 +91,6 @@ def check_dns_security(domain):
             if not spf_found: dns_report.append({"name": "SPF Record", "status": "fail", "value": "Não configurado"})
         except: dns_report.append({"name": "SPF Record", "status": "fail", "value": "Ausente"})
 
-        # DMARC
         try:
             answers = dns.resolver.resolve(f"_dmarc.{domain}", 'TXT')
             dmarc = answers[0].to_text().strip('"')
@@ -126,11 +142,13 @@ def get_ssl_info(hostname):
 
 def extract_api_patterns(html):
     findings = []
-    pattern = re.compile(r"['\"]((?:/|https?://)[a-zA-Z0-9_./?-]*?(?:api|v[0-9]|admin|auth)[a-zA-Z0-9_./?-]*)['\"]")
-    for match in set(pattern.findall(html)):
-        clean = match.strip("'\"")
-        if not any(x in clean for x in ['.png','.jpg','.css','.svg','.ico']):
-            findings.append({"type": "Possible Endpoint", "content": clean, "severity": "INFO"})
+    try:
+        pattern = re.compile(r"['\"]((?:/|https?://)[a-zA-Z0-9_./?-]*?(?:api|v[0-9]|admin|auth)[a-zA-Z0-9_./?-]*)['\"]")
+        for match in set(pattern.findall(html)):
+            clean = match.strip("'\"")
+            if not any(x in clean for x in ['.png','.jpg','.css','.svg','.ico']):
+                findings.append({"type": "Possible Endpoint", "content": clean, "severity": "INFO"})
+    except: pass
     return findings[:10]
 
 def analyze_cookies(jar):
@@ -144,16 +162,19 @@ def analyze_cookies(jar):
 
 def detect_technologies(headers, html, cookies):
     techs = []
-    if 'Server' in headers: techs.append({"name": "Server", "value": headers['Server']})
-    if 'X-Powered-By' in headers: techs.append({"name": "Powered By", "value": headers['X-Powered-By']})
-    if 'cf-ray' in headers: techs.append({"name": "CDN", "value": "Cloudflare"})
-    
-    soup = BeautifulSoup(html, 'html.parser')
-    meta = soup.find('meta', attrs={'name': 'generator'})
-    if meta and meta.get('content'): techs.append({"name": "Generator", "value": meta['content']})
-    
+    try:
+        if 'Server' in headers: techs.append({"name": "Server", "value": headers['Server']})
+        if 'X-Powered-By' in headers: techs.append({"name": "Powered By", "value": headers['X-Powered-By']})
+        if 'cf-ray' in headers: techs.append({"name": "CDN", "value": "Cloudflare"})
+        soup = BeautifulSoup(html, 'html.parser')
+        meta = soup.find('meta', attrs={'name': 'generator'})
+        if meta and meta.get('content'): techs.append({"name": "Generator", "value": meta['content']})
+    except: pass
     return techs
 
+# ==========================================
+# FUNÇÕES NOVAS (LEAK RADAR & OSINT)
+# ==========================================
 
 def check_leaks_real(email):
     try:
@@ -161,57 +182,78 @@ def check_leaks_real(email):
         headers = {'User-Agent': 'Mozilla/5.0 (WebSecAuditor)'}
         response = requests.get(url, headers=headers, timeout=10)
         data = response.json()
-        
-        if not data.get('success'):
-            return {"count": 0, "breaches": [], "status": "SAFE"}
-            
+        if not data.get('success'): return {"count": 0, "breaches": [], "status": "SAFE"}
         sources = data.get('sources', [])
-        breaches_formatted = []
-        
-        for source in sources:
-          
-            leak_name = source.get('name') if isinstance(source, dict) else str(source)
-            leak_date = source.get('date', 'Data Desconhecida') if isinstance(source, dict) else 'Data Desconhecida'
-            
-            breaches_formatted.append({
-                "name": leak_name, 
-                "date": leak_date,
-                "desc": "Vazamento de credenciais indexado publicamente."
-            })
-            
-        return {
-            "count": len(breaches_formatted),
-            "breaches": breaches_formatted,
-            "status": "LEAKED" if len(breaches_formatted) > 0 else "SAFE"
-        }
-    except Exception as e:
-        print(f"Erro LeakCheck: {e}")
-        return {"count": 0, "breaches": [], "status": "ERROR"}
+        breaches = []
+        for s in sources:
+            name = s.get('name') if isinstance(s, dict) else str(s)
+            date = s.get('date', 'N/A') if isinstance(s, dict) else 'N/A'
+            breaches.append({"name": name, "date": date, "desc": "Vazamento público indexado."})
+        return {"count": len(breaches), "breaches": breaches, "status": "LEAKED" if len(breaches)>0 else "SAFE"}
+    except: return {"count": 0, "breaches": [], "status": "ERROR"}
 
-# --- ROTAS ---
+def check_username_osint(username):
+    # Gera lista de links para verificação manual
+    sites = [
+        {"name": "Instagram", "url": f"https://www.instagram.com/{username}/", "icon": "📸"},
+        {"name": "Twitter / X", "url": f"https://twitter.com/{username}", "icon": "🐦"},
+        {"name": "Facebook", "url": f"https://www.facebook.com/{username}", "icon": "📘"},
+        {"name": "GitHub", "url": f"https://github.com/{username}", "icon": "🐙"},
+        {"name": "LinkedIn", "url": f"https://www.linkedin.com/in/{username}", "icon": "💼"},
+        {"name": "YouTube", "url": f"https://www.youtube.com/@{username}", "icon": "▶️"},
+        {"name": "TikTok", "url": f"https://www.tiktok.com/@{username}", "icon": "🎵"},
+        {"name": "Twitch", "url": f"https://www.twitch.tv/{username}", "icon": "💜"},
+        {"name": "Reddit", "url": f"https://www.reddit.com/user/{username}", "icon": "🤖"},
+        {"name": "Pinterest", "url": f"https://www.pinterest.com/{username}/", "icon": "📌"},
+        {"name": "SoundCloud", "url": f"https://soundcloud.com/{username}", "icon": "☁️"},
+        {"name": "Spotify", "url": f"https://open.spotify.com/user/{username}", "icon": "🎧"},
+        {"name": "Medium", "url": f"https://medium.com/@{username}", "icon": "📝"},
+        {"name": "Vimeo", "url": f"https://vimeo.com/{username}", "icon": "🎥"},
+        {"name": "Steam", "url": f"https://steamcommunity.com/id/{username}", "icon": "🎮"},
+        {"name": "About.me", "url": f"https://about.me/{username}", "icon": "👤"},
+        {"name": "Pastebin", "url": f"https://pastebin.com/u/{username}", "icon": "📄"},
+        {"name": "Wikipedia", "url": f"https://en.wikipedia.org/wiki/User:{username}", "icon": "📚"},
+        {"name": "HackerNews", "url": f"https://news.ycombinator.com/user?id={username}", "icon": "Y"},
+        {"name": "Behance", "url": f"https://www.behance.net/{username}", "icon": "🎨"}
+    ]
+    return sites
+
+# ==========================================
+# ROTAS FLASK
+# ==========================================
+
 @app.route('/')
 def home(): return send_from_directory('.', 'index.html')
-
 @app.route('/about')
 def about(): return send_from_directory('.', 'about.html')
-
 @app.route('/feedback')
 def feedback(): return send_from_directory('.', 'feedback.html')
-
 @app.route('/radar')
 def radar_page(): return send_from_directory('.', 'radar.html')
+@app.route('/osint')
+def osint_page(): return send_from_directory('.', 'osint.html')
 
+# API 1: OSINT (PEGADA DIGITAL)
+@app.route('/api/osint', methods=['POST'])
+def api_osint():
+    data = request.json
+    username = data.get('username', '').strip()
+    username = username.replace(' ', '')
+    if not username or len(username) < 2: 
+        return jsonify({"success": False, "message": "Username inválido"}), 400
+    results = check_username_osint(username)
+    return jsonify({"success": True, "data": results})
+
+# API 2: LEAK RADAR (VAZAMENTOS)
 @app.route('/api/radar', methods=['POST'])
 def api_radar():
     data = request.json
     email = data.get('email', '').strip()
-    
-    if not email or "@" not in email:
-        return jsonify({"success": False, "message": "E-mail inválido"}), 400
-    
+    if not email or "@" not in email: return jsonify({"success": False, "message": "E-mail inválido"}), 400
     result = check_leaks_real(email)
     return jsonify({"success": True, "data": result})
 
+# API 3: MAIN SCANNER (SITE)
 @app.route('/api/scan', methods=['POST'])
 def scan_url():
     data = request.json
@@ -230,7 +272,7 @@ def scan_url():
     try:
         headers_ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
         session = requests.Session()
-        resp = session.get(target, headers=headers_ua, timeout=10)
+        resp = session.get(target, headers=headers_ua, timeout=12)
         
         ssl_data = get_ssl_info(hostname)
         sub_data = check_common_subdomains(hostname)
@@ -241,6 +283,7 @@ def scan_url():
         file_data = check_special_files(target)
         whois_data = get_whois_info(hostname)
         sri_data = check_sri(resp.text)
+        geo_data = get_server_location(hostname)
 
         results = []
         score = 0
@@ -267,7 +310,8 @@ def scan_url():
             "headers": results, "ssl_info": ssl_data, "subdomain_info": sub_data,
             "api_info": api_data, "cookie_info": cookie_data, "tech_info": tech_data,
             "dns_info": dns_data, "files_info": file_data, "whois_info": whois_data,
-            "sri_info": sri_data, "finalUrl": resp.url
+            "sri_info": sri_data, "geo_info": geo_data,
+            "finalUrl": resp.url
         })
 
     except Exception as e:

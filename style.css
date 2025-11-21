@@ -387,3 +387,105 @@ footer:hover .author { color: var(--neon-green); text-shadow: 0 0 8px rgba(0, 25
         display: none !important;
     }
 }
+/* --- MODAL / DISCLAIMER (DESIGN PADRÃO/ENTERPRISE) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Fundo escuro sóbrio */
+    backdrop-filter: blur(3px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* TRANSIÇÃO SUAVE */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+/* Classe que torna o modal visível (Adicionada pelo JS) */
+.modal-overlay.show-modal {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: #161616; /* Cinza escuro profissional */
+    border: 1px solid #333; /* Borda discreta */
+    padding: 30px;
+    max-width: 480px;
+    width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    text-align: left; /* Texto alinhado à esquerda é mais formal */
+}
+
+.modal-header h2 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-body p {
+    color: #ccc;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-family: 'Segoe UI', sans-serif; /* Fonte padrão de sistema */
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end; /* Botões à direita */
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+/* Botões Padrão "Enterprise" */
+.btn-modal {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: none; /* Remove caixa alta forçada */
+    font-family: sans-serif;
+}
+
+/* Botão Cancelar (Discreto) */
+.btn-decline {
+    background: transparent;
+    border: 1px solid #444;
+    color: #aaa;
+}
+.btn-decline:hover {
+    background: #222;
+    color: #fff;
+    border-color: #666;
+    box-shadow: none;
+}
+
+/* Botão Aceitar (Destaque Sóbrio) */
+.btn-accept {
+    background: #22c55e; /* Verde Sólido */
+    border: 1px solid #22c55e;
+    color: #000;
+}
+.btn-accept:hover {
+    background: #16a34a;
+    border-color: #16a34a;
+    box-shadow: none; /* Sem brilho neon */
+}

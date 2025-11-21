@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback // WebSec Auditor</title>
+    <title>Digital Footprint // WebSec</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="/logoi.png">
 </head>
@@ -15,7 +15,7 @@
             </div>
             <div class="modal-body">
                 <p><strong>Atenção: Ferramenta Educacional</strong></p>
-                <p>Este software foi desenvolvido estritamente para fins de <strong> de pesquisa de segurança defensiva</strong>.</p>
+                <p>Este software foi desenvolvido estritamente para fins de <strong>análise de portfólio e pesquisa de segurança defensiva</strong>.</p>
                 
                 <p>O uso para escanear alvos sem autorização prévia pode violar leis de crimes cibernéticos. O autor não se responsabiliza por qualquer uso indevido das informações geradas aqui.</p>
             </div>
@@ -42,61 +42,65 @@
             </a>
         </div>
     </div>
+   
+
     <nav class="navbar">
         <div class="nav-content">
             <a href="/" class="nav-logo">WebSec<span style="color:var(--neon-green);">//</span>Auditor</a>
             <div class="nav-links">
                 <a href="/">Scanner</a>
                 <a href="/radar">Vazamentos</a>
-                <a href="/osint">Pegada Digital</a> <a href="/about">Sobre Mim</a>
+                <a href="/osint" class="active">Pegada Digital</a>
+                <a href="/about">Sobre Mim</a>
                 <a href="/feedback">Feedback</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
+        <header>
+            <h1>
+                <img src="foot.png" alt="Logo WebSec" class="logo-img">
+                <div>
+                    Digital <span class="neon-text">Footprint</span>
+                </div>
+            </h1>
+            <p class="subtitle">RASTREAMENTO DE USERNAME EM MÚLTIPLAS PLATAFORMAS</p>
+        </header>
+
         <div class="search-card">
-            <h2 style="color: var(--neon-green); margin-bottom: 20px; text-align: center;">ENVIAR FEEDBACK</h2>
-            <p class="subtitle" style="text-align: center; margin-bottom: 30px;">Encontrou um bug ou tem uma sugestão? Fale comigo.</p>
-            
-            <form action="https://formspree.io/f/mdkbylbr" method="POST">
-                
-                <div class="form-group">
-                    <input type="text" name="name" placeholder="SEU NOME" required style="width: 100%;">
-                </div>
-
-                <div class="form-group">
-                    <input type="email" name="email" placeholder="SEU E-MAIL" required style="width: 100%;">
-                </div>
-
-                <div class="form-group">
-                    <textarea name="message" placeholder="SUA MENSAGEM..." required></textarea>
-                </div>
-
-                <button type="submit" style="width: 100%;">ENVIAR MENSAGEM</button>
+            <form class="search-box" id="osintForm">
+                <input type="text" id="userInput" placeholder="DIGITE O USUÁRIO (EX: KUREISHIDEV)" required autocomplete="off">
+                <button type="submit">RASTREAR</button>
             </form>
+            <div id="loadingArea" class="hidden">
+                <p class="loader-text">VERIFICANDO 15+ PLATAFORMAS...</p>
+                <div class="cyber-loader"></div>
+            </div>
         </div>
-    </div>
+
+        <div id="osintResults" class="hidden" style="margin-top: 40px;">
+            <div id="resultsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+        </div>
+        
+    </div> <footer>
+        <div class="footer-content">
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
+                <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
+            </a>
+            <span class="separator">//</span>
+            <p>
+                Projeto desenvolvido por 
+                <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">Vinicius Wandembruck</a>
+                <span class="separator-inline"> // </span>
+                <a href="https://utfpr.curitiba.br/vespas/" target="_blank" title="VESPAS - UTFPR">
+                    <img src="vespas.png" alt="Logo VESPAS" class="vespas-logo-inline">
+                </a>
+            </p>
+        </div>
+    </footer>
     
-  <footer>
-    <div class="footer-content">
-        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" title="Licença Creative Commons 4.0">
-            <img src="https://licensebuttons.net/l/by/4.0/88x31.png" alt="CC BY 4.0" class="cc-logo">
-        </a>
-        
-        <span class="separator">//</span>
-        
-        <p>
-            Projeto desenvolvido por 
-            <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">
-                Vinicius Wandembruck
-            </a>
-            
-            <span class="separator-inline"> // </span>
-            
-            <a href="https://utfpr.curitiba.br/vespas/" target="_blank" title="VESPAS - UTFPR">
-                <img src="vespas.png" alt="Logo VESPAS" class="vespas-logo-inline">
-            </a>
-        </p>
-    </div>
-</footer>
+    <script src="osint.js"></script>
+    <script src="disclaimer.js"></script>
+</body>
+</html>

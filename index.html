@@ -8,6 +8,23 @@
     <link rel="icon" type="image/x-icon" href="/logoi.png">
 </head>
 <body>
+ <div id="disclaimerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Aviso Legal</h2>
+            </div>
+            <div class="modal-body">
+                <p><strong>Atenção: Ferramenta Educacional</strong></p>
+                <p>Este software foi desenvolvido estritamente para fins de <strong> de pesquisa de segurança defensiva</strong>.</p>
+                
+                <p>O uso para escanear alvos sem autorização prévia pode violar leis de crimes cibernéticos. O autor não se responsabiliza por qualquer uso indevido das informações geradas aqui.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btnDecline" class="btn-modal btn-decline">Sair</button>
+                <button id="btnAccept" class="btn-modal btn-accept">Concordo e Continuar</button>
+            </div>
+        </div>
+    </div>
   <div class="ad-sidebar ad-left">
         <div class="ad-content">
             <span>EVENTO</span>
@@ -25,12 +42,32 @@
             </a>
         </div>
     </div>
+    <div id="disclaimerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span style="font-size: 3rem;">⚠️</span>
+                <h2 style="color: var(--danger); margin-top: 10px;">AVISO LEGAL</h2>
+            </div>
+            <div class="modal-body">
+                <p>Esta ferramenta foi desenvolvida exclusivamente para fins <strong>EDUCACIONAIS</strong> e de <strong>ANÁLISE DE PORTFÓLIO</strong>.</p>
+                
+                <p>O uso deste software para escanear alvos sem consentimento prévio pode ser ilegal. O autor não se responsabiliza pelo mau uso das informações aqui geradas.</p>
+                
+                <p style="color: var(--neon-green); margin-top: 15px;">Deseja continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btnDecline" class="btn-danger">NÃO, SAIR</button>
+                <button id="btnAccept" class="btn-success">SIM, CONCORDO</button>
+            </div>
+        </div>
+    </div>
     <nav class="navbar">
         <div class="nav-content">
             <a href="/" class="nav-logo">WebSec<span style="color:var(--neon-green);">//</span>Auditor</a>
-            <div class="nav-links">
+             <div class="nav-links">
                 <a href="/">Scanner</a>
-                <a href="/radar">Vazamentos</a> <a href="/about">Sobre Mim</a>
+                <a href="/radar">Vazamentos</a>
+                <a href="/osint">Pegada Digital</a> <a href="/about">Sobre Mim</a>
                 <a href="/feedback">Feedback</a>
             </div>
         </div>
@@ -91,7 +128,7 @@
             <span class="separator">//</span>
             <p>
                 Projeto desenvolvido por 
-                <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">Vinicius Wandembruck</a>&trade;
+                <a href="https://www.linkedin.com/in/vinicius-wandembruck/" target="_blank" class="author">Vinicius Wandembruck</a>
                 <span class="separator-inline"> // </span>
                 <a href="https://utfpr.curitiba.br/vespas/" target="_blank" title="VESPAS - UTFPR">
                     <img src="vespas.png" alt="Logo VESPAS" class="vespas-logo-inline">
@@ -101,5 +138,6 @@
     </footer>
     
     <script src="script.js"></script>
+    <script src="disclaimer.js"></script>
 </body>
 </html>
