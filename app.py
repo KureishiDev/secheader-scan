@@ -257,7 +257,9 @@ def feedback(): return send_from_directory('.', 'feedback.html')
 def radar_page(): return send_from_directory('.', 'radar.html')
 @app.route('/osint')
 def osint_page(): return send_from_directory('.', 'osint.html')
-
+@app.route('/logo.png')
+def serve_logo():
+    return send_from_directory('.', 'logo.png')
 @app.route('/api/osint', methods=['POST'])
 def api_osint():
     data = request.json
@@ -343,4 +345,5 @@ def scan_url():
         return jsonify({"success": False, "message": "Erro ao conectar."}), 500
 
 if __name__ == '__main__':
+
     app.run(debug=True, port=5000)
