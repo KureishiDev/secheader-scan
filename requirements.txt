@@ -5,4 +5,5 @@ gunicorn
 pyopenssl
 beautifulsoup4
 dnspython
+flask-limiter  
 python-whois
